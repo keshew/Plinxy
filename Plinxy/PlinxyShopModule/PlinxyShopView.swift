@@ -3,7 +3,9 @@ import SwiftUI
 struct PlinxyShopView: View {
     @StateObject var plinxyShopModel =  PlinxyShopViewModel()
     @Environment(\.verticalSizeClass) var verticalSizeClass
-    
+    @Environment(\.presentationMode) var presentationMode
+    @State var ud = UserDefaultsManager()
+    @Binding var isShow: Bool
     var body: some View {
         if verticalSizeClass == .compact {
             ZStack {
@@ -13,7 +15,7 @@ struct PlinxyShopView: View {
                     VStack {
                         HStack {
                             Button(action: {
-                                
+                                isShow = false
                             }) {
                                 Image(.backBtn)
                                     .resizable()
@@ -44,7 +46,7 @@ struct PlinxyShopView: View {
                                         Text("COINS:")
                                             .BubbleNoOutline(size: 10, color: .white)
                                         
-                                        Text("1000")
+                                        Text("\(UserDefaultsManager.defaults.object(forKey: Keys.coin.rawValue) as? Int ?? 1)")
                                             .BubbleNoOutline(size: 10,
                                                              color: Color(red: 12/255, green: 77/255, blue: 249/255))
                                     }
@@ -64,7 +66,8 @@ struct PlinxyShopView: View {
                                         Spacer()
                                         
                                         Button(action: {
-                                            
+                                            ud.buyBomb()
+                                            plinxyShopModel.redraw = 1
                                         }) {
                                             Image(.buy)
                                                 .resizable()
@@ -86,7 +89,8 @@ struct PlinxyShopView: View {
                                         Spacer()
                                         
                                         Button(action: {
-                                            
+                                            ud.buyTime()
+                                            plinxyShopModel.redraw = 1
                                         }) {
                                             Image(.buy)
                                                 .resizable()
@@ -101,11 +105,14 @@ struct PlinxyShopView: View {
                     .padding(.top)
                 }
             }
+            .onAppear() {
+                OrientationManager.setLandscapeOrientation()
+            }
         }
     }
 }
 
 #Preview {
-    PlinxyShopView()
+    PlinxyShopView(isShow: .constant(false))
 }
 

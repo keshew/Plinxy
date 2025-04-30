@@ -34,11 +34,12 @@ struct PlinxyLoadingView: View {
             .onAppear() {
                 plinxyLoadingModel.increaseWidth()
                 plinxyLoadingModel.startTimer()
+                OrientationManager.setLandscapeOrientation()
             }
             
-//            .fullScreenCover(isPresented: $plinxyLoadingModel.isAnimationDone) {
-//                
-//            }
+            .fullScreenCover(isPresented: $plinxyLoadingModel.isAnimationDone) {
+                PlinxyMenuView()
+            }
         }
     }
 }

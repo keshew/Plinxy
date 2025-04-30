@@ -3,6 +3,8 @@ import SwiftUI
 struct PlinxyDailyView: View {
     @StateObject var plinxyDailyModel =  PlinxyDailyViewModel()
     @Environment(\.verticalSizeClass) var verticalSizeClass
+    @Environment(\.presentationMode) var presentationMode
+    @Binding var isShow: Bool
     
     var body: some View {
         if verticalSizeClass == .compact {
@@ -36,7 +38,7 @@ struct PlinxyDailyView: View {
                                         Text("COINS")
                                             .BubbleNoOutline(size: 10, color: .white)
                                         
-                                        Text("1000")
+                                        Text("\(UserDefaultsManager.defaults.object(forKey: Keys.coin.rawValue) as? Int ?? 1)")
                                             .BubbleNoOutline(size: 10,
                                                              color: Color(red: 12/255, green: 77/255, blue: 249/255))
                                     }
@@ -59,7 +61,8 @@ struct PlinxyDailyView: View {
                         Spacer(minLength: 30)
                         
                         Button(action: {
-                            
+                            isShow = false
+                            UserDefaultsManager().daily()
                         }) {
                             Image(.take)
                                 .resizable()
@@ -70,10 +73,13 @@ struct PlinxyDailyView: View {
                     .padding(.top)
                 }
             }
+            .onAppear() {
+                OrientationManager.setLandscapeOrientation()
+            }
         }
     }
 }
 
 #Preview {
-    PlinxyDailyView()
+    PlinxyDailyView(isShow: .constant(false))
 }

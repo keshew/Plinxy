@@ -3,6 +3,10 @@ import SwiftUI
 struct PlinxyLoseView: View {
     @StateObject var plinxyLoseModel =  PlinxyLoseViewModel()
     @Environment(\.verticalSizeClass) var verticalSizeClass
+    @State var isMenu = false
+    @State var isNext = false
+    var level: Int
+    var score: Int
     
     var body: some View {
         if verticalSizeClass == .compact {
@@ -33,7 +37,7 @@ struct PlinxyLoseView: View {
                                             Text("SCORE:")
                                                 .BubbleNoOutline(size: 10, color: .white)
                                             
-                                            Text("0/100")
+                                            Text("\(score)/100")
                                                 .BubbleNoOutline(size: 10,
                                                                  color: Color(red: 12/255, green: 77/255, blue: 249/255))
                                         }
@@ -97,7 +101,7 @@ struct PlinxyLoseView: View {
                                     
                                     HStack(spacing: 40) {
                                         Button(action: {
-                                            
+                                            isMenu = true
                                         }) {
                                             Image(.menu)
                                                 .resizable()
@@ -106,7 +110,7 @@ struct PlinxyLoseView: View {
                                         }
                                         
                                         Button(action: {
-                                            
+                                            isNext = true
                                         }) {
                                             Image(.retry)
                                                 .resizable()
@@ -123,11 +127,20 @@ struct PlinxyLoseView: View {
                     .padding(.top, 30)
                 }
             }
+            .onAppear() {
+                OrientationManager.setLandscapeOrientation()
+            }
+            .fullScreenCover(isPresented: $isMenu) {
+                PlinxyMenuView()
+            }
+            .fullScreenCover(isPresented: $isNext) {
+                PlinxyGameView(level: level)
+            }
         }
     }
 }
 
 #Preview {
-    PlinxyLoseView()
+    PlinxyLoseView(level: 1, score: 1)
 }
 

@@ -1,9 +1,13 @@
 import SwiftUI
+import SpriteKit
 
 struct PlinxyExitView: View {
     @StateObject var plinxyExitModel =  PlinxyExitViewModel()
     @Environment(\.verticalSizeClass) var verticalSizeClass
-
+    @State var isMenu = false
+    var game: GameData
+    var scene: SKScene
+    
     var body: some View {
         if verticalSizeClass == .compact {
             ZStack {
@@ -84,7 +88,8 @@ struct PlinxyExitView: View {
                                     
                                     HStack(spacing: 40) {
                                         Button(action: {
-                                            
+                                            game.isExit = false
+                                            scene.isPaused = false
                                         }) {
                                             Image(.no)
                                                 .resizable()
@@ -93,7 +98,7 @@ struct PlinxyExitView: View {
                                         }
                                         
                                         Button(action: {
-                                            
+                                            isMenu = true
                                         }) {
                                             Image(.yes)
                                                 .resizable()
@@ -110,11 +115,19 @@ struct PlinxyExitView: View {
                     .padding(.top, 30)
                 }
             }
+            .fullScreenCover(isPresented: $isMenu) {
+                PlinxyMenuView()
+            }
+            .onAppear() {
+                OrientationManager.setLandscapeOrientation()
+            }
         }
     }
 }
 
 #Preview {
-    PlinxyExitView()
+    let gameData = GameData()
+    let scene = SKScene()
+    PlinxyExitView(game: gameData, scene: scene)
 }
 

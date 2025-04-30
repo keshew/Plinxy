@@ -3,6 +3,14 @@ import SwiftUI
 struct PlinxyMenuView: View {
     @StateObject var plinxyMenuModel =  PlinxyMenuViewModel()
     @Environment(\.verticalSizeClass) var verticalSizeClass
+    @State var isShop = false
+    @State var isRecords = false
+    @State var isDaily = false
+    @State var play = false
+    @State var ud = UserDefaultsManager()
+    @State private var showToast = false
+    @State private var toastMessage = ""
+    @ObservedObject private var soundManager = SoundManager.shared
     
     var body: some View {
         if verticalSizeClass == .compact {
@@ -15,9 +23,15 @@ struct PlinxyMenuView: View {
                     VStack {
                         HStack {
                             Button(action: {
+                                soundManager.toggleMusic()
                                 
+                                if ud.isMusicEnabled() {
+                                    soundManager.playBackgroundMusic()
+                                } else {
+                                    soundManager.stopBackgroundMusic()
+                                }
                             }) {
-                                Image(.music)
+                                Image(ud.isMusicEnabled() ? .music : .musicOff)
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(width: 56, height: 44)
@@ -32,9 +46,10 @@ struct PlinxyMenuView: View {
                             Spacer()
                             
                             Button(action: {
-                                
+                                soundManager.toggleSound()
+                                soundManager.isSoundEnabled = ud.isSoundEnabled()
                             }) {
-                                Image(.sound)
+                                Image(ud.isSoundEnabled() ? .sound : .soundOff)
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(width: 56, height: 44)
@@ -58,7 +73,7 @@ struct PlinxyMenuView: View {
                                             Text("all SCORE:")
                                                 .BubbleNoOutline(size: 10, color: .white)
                                             
-                                            Text("1000000")
+                                            Text("\(ud.getTotalScore())")
                                                 .BubbleNoOutline(size: 10,
                                                                  color: Color(red: 12/255, green: 77/255, blue: 249/255))
                                         }
@@ -80,7 +95,7 @@ struct PlinxyMenuView: View {
                                             Text("COINS:")
                                                 .BubbleNoOutline(size: 10, color: .white)
                                             
-                                            Text("1000")
+                                            Text("\(UserDefaultsManager.defaults.object(forKey: Keys.coin.rawValue) as? Int ?? 1)")
                                                 .BubbleNoOutline(size: 10,
                                                                  color: Color(red: 12/255, green: 77/255, blue: 249/255))
                                         }
@@ -94,7 +109,7 @@ struct PlinxyMenuView: View {
                         Spacer(minLength: 20)
                         
                         Button(action: {
-                            
+                            play = true
                         }) {
                             Image(.play)
                                 .resizable()
@@ -107,7 +122,7 @@ struct PlinxyMenuView: View {
                         HStack(spacing: 30) {
                             VStack(spacing: 10) {
                                 Button(action: {
-                                    
+                                    isShop = true
                                 }) {
                                     Image(.shop)
                                         .resizable()
@@ -121,7 +136,7 @@ struct PlinxyMenuView: View {
                             
                             VStack(spacing: 10) {
                                 Button(action: {
-                                    
+                                    isRecords = true
                                 }) {
                                     Image(.records)
                                         .resizable()
@@ -135,12 +150,35 @@ struct PlinxyMenuView: View {
                             
                             VStack(spacing: 10) {
                                 Button(action: {
-                                    
+                                    if ud.canShowDailyView() {
+                                        isDaily = true
+                                    } else {
+                                        toastMessage = "Not yet!"
+                                        withAnimation {
+                                            showToast = true
+                                        }
+                                    }
                                 }) {
                                     Image(.daily)
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
                                         .frame(width: 111, height: 50)
+                                        .overlay {
+                                            if showToast {
+                                                Text(toastMessage)
+                                                    .BubbleNoOutline(size: 20, color: .white)
+                                                    .transition(.opacity)
+                                                    .zIndex(1)
+                                                    .onAppear {
+                                                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                                            withAnimation {
+                                                                showToast = false
+                                                            }
+                                                        }
+                                                    }
+                                                    .offset(y: -50)
+                                            }
+                                        }
                                 }
                                 
                                 Text("DAILY!")
@@ -150,6 +188,29 @@ struct PlinxyMenuView: View {
                     }
                     .padding(.top)
                 }
+                
+                if isShop {
+                    PlinxyShopView(isShow: $isShop)
+                }
+                
+                if isDaily {
+                    PlinxyDailyView(isShow: $isDaily)
+                }
+            }
+            .onChange(of: isDaily) { newValue in
+                if newValue == false {
+                    ud.updateLastShowDate()
+                }
+            }
+            
+            .onAppear() {
+                OrientationManager.setLandscapeOrientation()
+            }
+            .fullScreenCover(isPresented: $isRecords) {
+                PlinxyRecordsView()
+            }
+            .fullScreenCover(isPresented: $play) {
+                PlinxyLevelView()
             }
         }
     }

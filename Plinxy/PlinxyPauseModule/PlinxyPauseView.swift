@@ -1,8 +1,11 @@
 import SwiftUI
+import SpriteKit
 
 struct PlinxyPauseView: View {
     @StateObject var plinxyPauseModel =  PlinxyPauseViewModel()
     @Environment(\.verticalSizeClass) var verticalSizeClass
+    var game: GameData
+    var scene: SKScene
     
     var body: some View {
         if verticalSizeClass == .compact {
@@ -90,7 +93,8 @@ struct PlinxyPauseView: View {
                                     
                                     HStack(spacing: 40) {
                                         Button(action: {
-                                            
+                                            game.isExit = true
+                                            game.isPause = false
                                         }) {
                                             Image(.exit)
                                                 .resizable()
@@ -99,7 +103,8 @@ struct PlinxyPauseView: View {
                                         }
                                         
                                         Button(action: {
-                                            
+                                            game.isPause = false
+                                            scene.isPaused = false
                                         }) {
                                             Image(.continue)
                                                 .resizable()
@@ -116,11 +121,16 @@ struct PlinxyPauseView: View {
                     .padding(.top, 30)
                 }
             }
+            .onAppear() {
+                OrientationManager.setLandscapeOrientation()
+            }
         }
     }
 }
 
 #Preview {
-    PlinxyPauseView()
+    let gameData = GameData()
+    let scene = SKScene()
+    PlinxyPauseView(game: gameData, scene: scene)
 }
 

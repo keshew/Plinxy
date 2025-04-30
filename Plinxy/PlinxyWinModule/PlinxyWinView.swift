@@ -3,6 +3,10 @@ import SwiftUI
 struct PlinxyWinView: View {
     @StateObject var plinxyWinModel =  PlinxyWinViewModel()
     @Environment(\.verticalSizeClass) var verticalSizeClass
+    @State var isMenu = false
+    @State var isNext = false
+    var level: Int
+    var score: Int
     
     var body: some View {
         if verticalSizeClass == .compact {
@@ -76,7 +80,7 @@ struct PlinxyWinView: View {
                                         .BubbleNoOutline(size: 20, color: .white)
                                     
                                     HStack {
-                                        Text("YOUR SCORE:1000")
+                                        Text("YOUR SCORE: \(score)")
                                             .BubbleNoOutline(size: 20, color: .white)
                                         
                                         Image(.star)
@@ -97,7 +101,7 @@ struct PlinxyWinView: View {
                                     
                                     HStack(spacing: 40) {
                                         Button(action: {
-                                            
+                                            isMenu = true
                                         }) {
                                             Image(.menu)
                                                 .resizable()
@@ -106,7 +110,7 @@ struct PlinxyWinView: View {
                                         }
                                         
                                         Button(action: {
-                                            
+                                            isNext = true
                                         }) {
                                             Image(.continue)
                                                 .resizable()
@@ -123,11 +127,20 @@ struct PlinxyWinView: View {
                     .padding(.top, 30)
                 }
             }
+            .onAppear() {
+                OrientationManager.setLandscapeOrientation()
+            }
+            .fullScreenCover(isPresented: $isMenu) {
+                PlinxyMenuView()
+            }
+            .fullScreenCover(isPresented: $isNext) {
+                PlinxyGameView(level: level + 1)
+            }
         }
     }
 }
 
 #Preview {
-    PlinxyWinView()
+    PlinxyWinView(level: 1, score: 1)
 }
 

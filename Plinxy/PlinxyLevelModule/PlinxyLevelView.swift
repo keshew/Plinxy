@@ -3,7 +3,9 @@ import SwiftUI
 struct PlinxyLevelView: View {
     @StateObject var plinxyLevelModel =  PlinxyLevelViewModel()
     @Environment(\.verticalSizeClass) var verticalSizeClass
-    var level = 1
+    @State var isPlay = false
+    @Environment(\.presentationMode) var presentationMode
+    @State var ud = UserDefaultsManager()
     
     var body: some View {
         if verticalSizeClass == .compact {
@@ -22,7 +24,7 @@ struct PlinxyLevelView: View {
                     VStack {
                         HStack {
                             Button(action: {
-                                
+                                presentationMode.wrappedValue.dismiss()
                             }) {
                                 Image(.backBtn)
                                     .resizable()
@@ -58,7 +60,7 @@ struct PlinxyLevelView: View {
                                             Text("TOTAL SCORE:")
                                                 .BubbleNoOutline(size: 10, color: .white)
                                             
-                                            Text("0/100")
+                                            Text("\(ud.getScore(for: plinxyLevelModel.currentIndex))/100")
                                                 .BubbleNoOutline(size: 10,
                                                                  color: Color(red: 12/255, green: 77/255, blue: 249/255))
                                         }
@@ -76,7 +78,7 @@ struct PlinxyLevelView: View {
                                 .padding(.leading, 215)
                             
                             Button(action: {
-                                
+                                isPlay = true
                             }) {
                                 Image(.play)
                                     .resizable()
@@ -92,7 +94,7 @@ struct PlinxyLevelView: View {
                     }
                     .padding(.top)
                 }
-                .disabled(plinxyLevelModel.currentIndex >= level ? true : false)
+                .disabled(plinxyLevelModel.currentIndex >= UserDefaultsManager.defaults.object(forKey: Keys.currentLevel.rawValue) as? Int ?? 1 ? true : false)
                 .gesture(
                     DragGesture()
                         .onEnded { value in
@@ -112,7 +114,7 @@ struct PlinxyLevelView: View {
                         }
                 )
                 
-                if plinxyLevelModel.currentIndex >= level {
+                if plinxyLevelModel.currentIndex >= UserDefaultsManager.defaults.object(forKey: Keys.currentLevel.rawValue) as? Int ?? 1 {
                     ZStack {
                         Color.black
                             .ignoresSafeArea()
@@ -169,6 +171,12 @@ struct PlinxyLevelView: View {
                         )
                     }
                 }
+            }
+            .onAppear() {
+                OrientationManager.setLandscapeOrientation()
+            }
+            .fullScreenCover(isPresented: $isPlay) {
+                PlinxyGameView(level: plinxyLevelModel.currentIndex)
             }
         }
     }

@@ -7,7 +7,8 @@ struct PlinxyRecordsView: View {
                  GridItem(.flexible(), spacing: 0),
                  GridItem(.flexible(), spacing: 0),
                  GridItem(.flexible(), spacing: 0)]
-    var level = 1
+    
+    @Environment(\.presentationMode) var presentationMode
     var body: some View {
         if verticalSizeClass == .compact {
             ZStack {
@@ -19,7 +20,7 @@ struct PlinxyRecordsView: View {
                     VStack {
                         HStack {
                             Button(action: {
-                                
+                                presentationMode.wrappedValue.dismiss()
                             }) {
                                 Image(.backBtn)
                                     .resizable()
@@ -40,10 +41,12 @@ struct PlinxyRecordsView: View {
                         
                         LazyVGrid(columns: grids) {
                             ForEach(0..<15, id: \.self) { index in
-                                if level < index + 1 {
+                                let score = plinxyRecordsModel.score(for: index + 1)
+                                
+                                if UserDefaultsManager.defaults.object(forKey: Keys.currentLevel.rawValue) as? Int ?? 1 < index + 1 {
                                     LockedRecords(index: index)
                                 } else {
-                                    OpenRecords(index: index)
+                                    OpenRecords(index: index, score: score)
                                 }
                             }
                         }
@@ -51,8 +54,10 @@ struct PlinxyRecordsView: View {
                     .padding(.top)
                 }
             }
+            .onAppear() {
+                OrientationManager.setLandscapeOrientation()
+            }
         }
-        
     }
 }
 
@@ -63,6 +68,7 @@ struct PlinxyRecordsView: View {
 
 struct OpenRecords: View {
     var index: Int
+    var score: Int
     var body: some View {
         VStack(spacing: 5) {
             Text("LEVEL \(index + 1)")
@@ -92,7 +98,7 @@ struct OpenRecords: View {
                                 Text("TOTAL SCORE:")
                                     .BubbleNoOutline(size: 6, color: .white)
                                 
-                                Text("0/100")
+                                Text("\(score)/100")
                                     .BubbleNoOutline(size: 6,
                                                      color: Color(red: 12/255, green: 77/255, blue: 249/255))
                             }
