@@ -10,52 +10,103 @@ struct PlinxyRecordsView: View {
     
     @Environment(\.presentationMode) var presentationMode
     var body: some View {
-        if verticalSizeClass == .compact {
-            ZStack {
-                Image(.bg2)
-                    .resizable()
-                    .ignoresSafeArea()
-                
-                ScrollView(showsIndicators: false) {
-                    VStack {
-                        HStack {
-                            Button(action: {
-                                presentationMode.wrappedValue.dismiss()
-                            }) {
-                                Image(.backBtn)
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 56, height: 44)
-                            }
-                            
-                            Spacer()
-                            
-                            Text("Best records")
-                                .Bubble(size: 30)
-                            
-                            Spacer(minLength: 250)
-                        }
-                        .padding(.leading)
-                        
-                        Spacer(minLength: 30)
-                        
-                        LazyVGrid(columns: grids) {
-                            ForEach(0..<15, id: \.self) { index in
-                                let score = plinxyRecordsModel.score(for: index + 1)
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            if verticalSizeClass == .regular {
+                ZStack {
+                    Image(.bg2)
+                        .resizable()
+                        .ignoresSafeArea()
+                    
+                    ScrollView(showsIndicators: false) {
+                        VStack {
+                            HStack {
+                                Button(action: {
+                                    presentationMode.wrappedValue.dismiss()
+                                }) {
+                                    Image(.backBtn)
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: 56, height: 44)
+                                }
                                 
-                                if UserDefaultsManager.defaults.object(forKey: Keys.currentLevel.rawValue) as? Int ?? 1 < index + 1 {
-                                    LockedRecords(index: index)
-                                } else {
-                                    OpenRecords(index: index, score: score)
+                                Spacer()
+                                
+                                Text("Best records")
+                                    .Bubble(size: 30)
+                                
+                                Spacer(minLength: 250)
+                            }
+                            .padding(.leading)
+                            
+                            Spacer(minLength: 30)
+                            
+                            LazyVGrid(columns: grids) {
+                                ForEach(0..<15, id: \.self) { index in
+                                    let score = plinxyRecordsModel.score(for: index + 1)
+                                    
+                                    if UserDefaultsManager.defaults.object(forKey: Keys.currentLevel.rawValue) as? Int ?? 1 < index + 1 {
+                                        LockedRecords(index: index)
+                                    } else {
+                                        OpenRecords(index: index, score: score)
+                                    }
                                 }
                             }
                         }
+                        .padding(.top)
                     }
-                    .padding(.top)
+                }
+                .onAppear() {
+                    OrientationManager.setLandscapeOrientation()
                 }
             }
-            .onAppear() {
-                OrientationManager.setLandscapeOrientation()
+        } else {
+            if verticalSizeClass == .compact {
+                ZStack {
+                    Image(.bg2)
+                        .resizable()
+                        .ignoresSafeArea()
+                    
+                    ScrollView(showsIndicators: false) {
+                        VStack {
+                            HStack {
+                                Button(action: {
+                                    presentationMode.wrappedValue.dismiss()
+                                }) {
+                                    Image(.backBtn)
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: 56, height: 44)
+                                }
+                                
+                                Spacer()
+                                
+                                Text("Best records")
+                                    .Bubble(size: 30)
+                                
+                                Spacer(minLength: 250)
+                            }
+                            .padding(.leading)
+                            
+                            Spacer(minLength: 30)
+                            
+                            LazyVGrid(columns: grids) {
+                                ForEach(0..<15, id: \.self) { index in
+                                    let score = plinxyRecordsModel.score(for: index + 1)
+                                    
+                                    if UserDefaultsManager.defaults.object(forKey: Keys.currentLevel.rawValue) as? Int ?? 1 < index + 1 {
+                                        LockedRecords(index: index)
+                                    } else {
+                                        OpenRecords(index: index, score: score)
+                                    }
+                                }
+                            }
+                        }
+                        .padding(.top)
+                    }
+                }
+                .onAppear() {
+                    OrientationManager.setLandscapeOrientation()
+                }
             }
         }
     }

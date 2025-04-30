@@ -193,7 +193,14 @@ class GameSpriteKit: SKScene, SKPhysicsContactDelegate {
                 let ball = SKSpriteNode(imageNamed: ballImageName)
                 ball.size = ballSize
                 let xPos = size.width / 2 - totalRowWidth / 2 + CGFloat(ballIndex) * horizontalSpacing
-                ball.position = CGPoint(x: xPos, y: yPos + 160)
+                if UIScreen.main.bounds.width > 1300 {
+                    ball.position = CGPoint(x: xPos, y: yPos + 390)
+                } else if UIScreen.main.bounds.width > 1100 {
+                    ball.position = CGPoint(x: xPos, y: yPos + 320)
+                } else {
+                    ball.position = CGPoint(x: xPos, y: yPos + 160)
+                }
+              
                 ball.physicsBody = SKPhysicsBody(circleOfRadius: ballSize.width / 2)
                 ball.name = ballImageName
                 ball.physicsBody?.isDynamic = false
@@ -562,42 +569,83 @@ class GameSpriteKit: SKScene, SKPhysicsContactDelegate {
 struct PlinxyGameView: View {
     @StateObject var plinxyGameModel =  PlinxyGameViewModel()
     @StateObject var gameModel = GameData()
+    @Environment(\.verticalSizeClass) var verticalSizeClass
     var level: Int
     var body: some View {
-        ZStack {
-            SpriteView(scene: plinxyGameModel.createGameScene(gameData: gameModel, level: level))
-                .ignoresSafeArea()
-                .navigationBarBackButtonHidden(true)
-            
-            if gameModel.isLose {
-                PlinxyLoseView(level: level, score: gameModel.score)
-            }
-            
-            if gameModel.isWin {
-                PlinxyWinView(level: level, score: gameModel.score)
-                    .onAppear {
-                        let levelScores = UserDefaultsManager().getLevelScores()
-                        if levelScores.count <= 14 {
-                            if level + 1 >= UserDefaultsManager.defaults.integer(forKey: Keys.currentLevel.rawValue) {
-                                UserDefaultsManager().increaseLevel()
-                            }
-                        }
-                        UserDefaultsManager().saveLevelScore(level: level + 1, score: gameModel.score)
-                        UserDefaultsManager().daily()
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            if verticalSizeClass == .regular {
+                ZStack {
+                    SpriteView(scene: plinxyGameModel.createGameScene(gameData: gameModel, level: level))
+                        .ignoresSafeArea()
+                        .navigationBarBackButtonHidden(true)
+                    
+                    if gameModel.isLose {
+                        PlinxyLoseView(level: level, score: gameModel.score)
                     }
+                    
+                    if gameModel.isWin {
+                        PlinxyWinView(level: level, score: gameModel.score)
+                            .onAppear {
+                                let levelScores = UserDefaultsManager().getLevelScores()
+                                if levelScores.count <= 14 {
+                                    if level + 1 >= UserDefaultsManager.defaults.integer(forKey: Keys.currentLevel.rawValue) {
+                                        UserDefaultsManager().increaseLevel()
+                                    }
+                                }
+                                UserDefaultsManager().saveLevelScore(level: level + 1, score: gameModel.score)
+                                UserDefaultsManager().daily()
+                            }
+                    }
+                    
+                    if gameModel.isPause {
+                        PlinxyPauseView(game: gameModel, scene: gameModel.scene)
+                    }
+                    
+                    if gameModel.isExit {
+                        PlinxyExitView(game: gameModel, scene: gameModel.scene)
+                    }
+                }
+                .onAppear() {
+                    OrientationManager.setLandscapeOrientation()
+                }
             }
-            
-            if gameModel.isPause {
-                PlinxyPauseView(game: gameModel, scene: gameModel.scene)
+        } else {
+            if verticalSizeClass == .compact {
+                ZStack {
+                    SpriteView(scene: plinxyGameModel.createGameScene(gameData: gameModel, level: level))
+                        .ignoresSafeArea()
+                        .navigationBarBackButtonHidden(true)
+                    
+                    if gameModel.isLose {
+                        PlinxyLoseView(level: level, score: gameModel.score)
+                    }
+                    
+                    if gameModel.isWin {
+                        PlinxyWinView(level: level, score: gameModel.score)
+                            .onAppear {
+                                let levelScores = UserDefaultsManager().getLevelScores()
+                                if levelScores.count <= 14 {
+                                    if level + 1 >= UserDefaultsManager.defaults.integer(forKey: Keys.currentLevel.rawValue) {
+                                        UserDefaultsManager().increaseLevel()
+                                    }
+                                }
+                                UserDefaultsManager().saveLevelScore(level: level + 1, score: gameModel.score)
+                                UserDefaultsManager().daily()
+                            }
+                    }
+                    
+                    if gameModel.isPause {
+                        PlinxyPauseView(game: gameModel, scene: gameModel.scene)
+                    }
+                    
+                    if gameModel.isExit {
+                        PlinxyExitView(game: gameModel, scene: gameModel.scene)
+                    }
+                }
+                .onAppear() {
+                    OrientationManager.setLandscapeOrientation()
+                }
             }
-            
-            if gameModel.isExit {
-                PlinxyExitView(game: gameModel, scene: gameModel.scene)
-            }
-        }
-        .onAppear() {
-            print(level)
-            OrientationManager.setLandscapeOrientation()
         }
     }
 }
